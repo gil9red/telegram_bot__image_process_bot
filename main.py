@@ -61,8 +61,6 @@ def get_file_name_image(user_id):
 @run_async
 @log_func(log)
 def start(update: Update, context: CallbackContext):
-    log.debug('chat: %s', update.message.chat)
-
     update.message.reply_text('Отправь мне картинку')
 
 
@@ -108,7 +106,6 @@ def on_request(update: Update, context: CallbackContext):
 @log_func(log)
 def on_photo(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
-    log.debug('chat: %s', update.message.chat)
 
     msg = 'Скачиваю картинку...'
     log.debug(msg)
