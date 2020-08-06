@@ -20,6 +20,7 @@ from telegram.ext.dispatcher import run_async
 import config
 from commands import invert, gray, invert_gray, pixelate, get_image_info, jackal_jpg, thumbnail, blur
 from common import get_logger, log_func
+from i18n import _, update_lang
 
 
 log = get_logger(__file__)
@@ -59,12 +60,14 @@ def get_file_name_image(user_id):
 
 
 @run_async
+@update_lang
 @log_func(log)
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text('Отправь мне картинку')
+def on_start(update: Update, context: CallbackContext):
+    update.message.reply_text(_('WELCOME_MESSAGE'))
 
 
 @run_async
+@update_lang
 @log_func(log)
 def on_request(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
@@ -72,14 +75,14 @@ def on_request(update: Update, context: CallbackContext):
     log.debug('text: %s', text)
 
     if text not in COMMANDS:
-        update.message.reply_text(f'Неизвестная команда {text!r}')
+        update.message.reply_text(_('UNKNOWN_COMMAND', repr(text)))
         return
 
     context.bot.send_chat_action(chat_id, action=ChatAction.UPLOAD_PHOTO)
 
     file_name = get_file_name_image(chat_id)
     if not os.path.exists(file_name):
-        update.message.reply_text('Нужно отправить мне картинку')
+        update.message.reply_text(_('NEED_TO_SEND_PICTURE'))
         return
 
     img = Image.open(file_name)
@@ -103,12 +106,13 @@ def on_request(update: Update, context: CallbackContext):
 
 
 @run_async
+@update_lang
 @log_func(log)
 def on_photo(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
 
-    msg = 'Скачиваю картинку...'
-    log.debug(msg)
+    log.debug('Downloading a picture ...')
+    msg = _('DOWNLOADING_PICTURE')
     progress_message = update.message.reply_text(msg + '\n⬜⬜⬜⬜⬜')
 
     context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -123,20 +127,21 @@ def on_photo(update: Update, context: CallbackContext):
     with open(file_name, 'wb') as f:
         f.write(rs.content)
 
-    msg = 'Картинка скачана!'
-    log.debug(msg)
+    log.debug('Picture downloaded!')
+    msg = _('PICTURE_DOWNLOADED')
     progress_message.edit_text(msg + '\n⬛⬛⬛⬛⬛')
     progress_message.delete()
 
     update.message.reply_text(
-        "Теперь доступны команды над картинкой!",
+        _('COMMANDS_ARE_NOW_AVAILABLE'),
         reply_markup=REPLY_KEYBOARD_MARKUP
     )
 
 
+@update_lang
 def on_error(update: Update, context: CallbackContext):
     log.exception('Error: %s\nUpdate: %s', context.error, update)
-    update.message.reply_text(config.ERROR_TEXT)
+    update.message.reply_text(_('ERROR_TEXT'))
 
 
 def main():
@@ -155,7 +160,7 @@ def main():
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CommandHandler('start', on_start))
     dp.add_handler(MessageHandler(Filters.text, on_request))
     dp.add_handler(MessageHandler(Filters.photo, on_photo))
 
