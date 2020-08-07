@@ -4,6 +4,7 @@
 __author__ = 'ipetrash'
 
 
+import io
 import os
 import time
 
@@ -97,12 +98,11 @@ def on_request(update: Update, context: CallbackContext):
     else:
         log.debug('reply_photo')
 
-        file_name = get_file_name_image(f'out_{chat_id}')
-        result.save(file_name, result.format)
+        bytes_io = io.BytesIO()
+        img.save(bytes_io, format='JPEG')
+        bytes_io.seek(0)
 
-        update.message.reply_photo(open(file_name, 'rb'))
-
-        os.remove(file_name)
+        update.message.reply_photo(bytes_io)
 
 
 @run_async
