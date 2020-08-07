@@ -4,7 +4,9 @@
 __author__ = 'ipetrash'
 
 
-TOKEN = '<TOKEN>'
-TOKEN = '595552970:AAHZA53i3BvqZrynEZIEimFARtJ4x5FqkpM'
+import os
+
+
+TOKEN = os.environ.get('TOKEN') or open('TOKEN.txt', encoding='utf-8').read().strip()
 
 DIR_IMAGES = 'images'

@@ -29,12 +29,14 @@ def reset_lang():
 def update_lang(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        update = args[0]
-        if update.effective_user:
-            language_code = update.effective_user.language_code
-            if language_code != 'ru':
-                language_code = 'en'
-            set_lang(language_code)
+        if args:
+            update = args[0]
+            if update and update.effective_user:
+                language_code = update.effective_user.language_code
+                if language_code != 'ru':
+                    language_code = 'en'
+                set_lang(language_code)
+
         return func(*args, **kwargs)
     return wrapper
 
