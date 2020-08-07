@@ -99,7 +99,7 @@ def on_request(update: Update, context: CallbackContext):
         log.debug('reply_photo')
 
         bytes_io = io.BytesIO()
-        img.save(bytes_io, format='JPEG')
+        result.save(bytes_io, format='JPEG')
         bytes_io.seek(0)
 
         update.message.reply_photo(bytes_io)
