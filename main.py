@@ -141,7 +141,8 @@ def on_photo(update: Update, context: CallbackContext):
 @update_lang
 def on_error(update: Update, context: CallbackContext):
     log.exception('Error: %s\nUpdate: %s', context.error, update)
-    update.message.reply_text(_('ERROR_TEXT'))
+    if update and update.message:
+        update.message.reply_text(_('ERROR_TEXT'))
 
 
 def main():
