@@ -94,7 +94,7 @@ def on_request(update: Update, context: CallbackContext):
 
     if type(result) == str:
         log.debug('reply_text')
-        update.message.reply_text(result)
+        update.message.reply_text(result, reply_markup=REPLY_KEYBOARD_MARKUP)
     else:
         log.debug('reply_photo')
 
@@ -102,7 +102,7 @@ def on_request(update: Update, context: CallbackContext):
         result.save(bytes_io, format='JPEG')
         bytes_io.seek(0)
 
-        update.message.reply_photo(bytes_io)
+        update.message.reply_photo(bytes_io, reply_markup=REPLY_KEYBOARD_MARKUP)
 
 
 @run_async
