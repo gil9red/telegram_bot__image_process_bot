@@ -165,7 +165,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.text, on_request))
     dp.add_handler(MessageHandler(Filters.photo, on_photo))
 
-    # log all errors
+    # Handle all errors
     dp.add_error_handler(on_error)
 
     # Start the Bot
