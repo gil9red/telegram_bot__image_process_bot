@@ -20,7 +20,7 @@ from telegram.ext.dispatcher import run_async
 
 import config
 from commands import invert, gray, invert_gray, pixelate, get_image_info, jackal_jpg, thumbnail, blur
-from common import get_logger, log_func
+from common import get_logger, log_func, catch_error
 from i18n import _, update_lang
 
 
@@ -61,6 +61,7 @@ def get_file_name_image(chat_id):
 
 
 @run_async
+@catch_error(log)
 @update_lang
 @log_func(log)
 def on_start(update: Update, context: CallbackContext):
@@ -68,6 +69,7 @@ def on_start(update: Update, context: CallbackContext):
 
 
 @run_async
+@catch_error(log)
 @update_lang
 @log_func(log)
 def on_request(update: Update, context: CallbackContext):
@@ -106,6 +108,7 @@ def on_request(update: Update, context: CallbackContext):
 
 
 @run_async
+@catch_error(log)
 @update_lang
 @log_func(log)
 def on_photo(update: Update, context: CallbackContext):
@@ -138,6 +141,7 @@ def on_photo(update: Update, context: CallbackContext):
     )
 
 
+@catch_error(log)
 @update_lang
 def on_error(update: Update, context: CallbackContext):
     log.exception('Error: %s\nUpdate: %s', context.error, update)

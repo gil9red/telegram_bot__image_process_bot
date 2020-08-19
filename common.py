@@ -9,6 +9,12 @@ import logging
 import sys
 from pathlib import Path
 
+# pip install python-telegram-bot
+from telegram import Update
+from telegram.ext import CallbackContext
+
+import config
+
 
 def get_logger(file_name: str, dir_name='logs'):
     dir_name = Path(dir_name).resolve()
@@ -61,6 +67,22 @@ def log_func(logger: logging.Logger):
                 logger.debug(func.__name__ + msg)
 
             return func(*args, **kwargs)
+
+        return wrapper
+    return actual_decorator
+
+
+def catch_error(logger: logging.Logger):
+    def actual_decorator(func):
+        @functools.wraps(func)
+        def wrapper(update: Update, context: CallbackContext):
+            try:
+                return func(update, context)
+            except:
+                logger.exception('Error: %s\nUpdate: %s', context.error, update)
+
+                if update and update.message:
+                    update.message.reply_text(config.ERROR_TEXT)
 
         return wrapper
     return actual_decorator
