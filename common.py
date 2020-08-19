@@ -13,7 +13,7 @@ from pathlib import Path
 from telegram import Update
 from telegram.ext import CallbackContext
 
-import config
+from i18n import _
 
 
 def get_logger(file_name: str, dir_name='logs'):
@@ -82,7 +82,7 @@ def catch_error(logger: logging.Logger):
                 logger.exception('Error: %s\nUpdate: %s', context.error, update)
 
                 if update and update.message:
-                    update.message.reply_text(config.ERROR_TEXT)
+                    update.message.reply_text(_('ERROR_TEXT'))
 
         return wrapper
     return actual_decorator
