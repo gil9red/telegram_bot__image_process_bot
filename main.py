@@ -56,8 +56,8 @@ REPLY_KEYBOARD_MARKUP = ReplyKeyboardMarkup(BUTTON_LIST, resize_keyboard=True)
 os.makedirs(config.DIR_IMAGES, exist_ok=True)
 
 
-def get_file_name_image(user_id):
-    return f'{config.DIR_IMAGES}/{user_id}.jpg'
+def get_file_name_image(chat_id):
+    return f'{config.DIR_IMAGES}/{chat_id}.jpg'
 
 
 @run_async
