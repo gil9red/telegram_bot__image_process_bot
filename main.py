@@ -167,6 +167,7 @@ def main():
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
+
     dp.add_handler(CommandHandler('start', on_start))
     dp.add_handler(MessageHandler(Filters.text, on_request))
     dp.add_handler(MessageHandler(Filters.photo, on_photo))
