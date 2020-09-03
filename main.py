@@ -65,7 +65,7 @@ def get_file_name_image(chat_id):
 @update_lang
 @log_func(log)
 def on_start(update: Update, context: CallbackContext):
-    update.message.reply_text(_('WELCOME_MESSAGE'))
+    update.effective_message.reply_text(_('WELCOME_MESSAGE'))
 
 
 @run_async
@@ -73,19 +73,20 @@ def on_start(update: Update, context: CallbackContext):
 @update_lang
 @log_func(log)
 def on_request(update: Update, context: CallbackContext):
-    chat_id = update.message.chat_id
-    text = update.message.text
+    message = update.effective_message
+    chat_id = message.chat_id
+    text = message.text
     log.debug('text: %s', text)
 
     if text not in COMMANDS:
-        update.message.reply_text(_('UNKNOWN_COMMAND', repr(text)))
+        message.reply_text(_('UNKNOWN_COMMAND', repr(text)))
         return
 
     context.bot.send_chat_action(chat_id, action=ChatAction.UPLOAD_PHOTO)
 
     file_name = get_file_name_image(chat_id)
     if not os.path.exists(file_name):
-        update.message.reply_text(_('NEED_TO_SEND_PICTURE'))
+        message.reply_text(_('NEED_TO_SEND_PICTURE'))
         return
 
     img = Image.open(file_name)
@@ -96,7 +97,7 @@ def on_request(update: Update, context: CallbackContext):
 
     if type(result) == str:
         log.debug('reply_text')
-        update.message.reply_text(result, reply_markup=REPLY_KEYBOARD_MARKUP)
+        message.reply_text(result, reply_markup=REPLY_KEYBOARD_MARKUP)
     else:
         log.debug('reply_photo')
 
@@ -104,7 +105,7 @@ def on_request(update: Update, context: CallbackContext):
         result.save(bytes_io, format='JPEG')
         bytes_io.seek(0)
 
-        update.message.reply_photo(bytes_io, reply_markup=REPLY_KEYBOARD_MARKUP)
+        message.reply_photo(bytes_io, reply_markup=REPLY_KEYBOARD_MARKUP)
 
 
 @run_async
@@ -112,15 +113,16 @@ def on_request(update: Update, context: CallbackContext):
 @update_lang
 @log_func(log)
 def on_photo(update: Update, context: CallbackContext):
-    chat_id = update.message.chat_id
+    message = update.effective_message
+    chat_id = message.chat_id
 
     log.debug('Downloading a picture ...')
     msg = _('DOWNLOADING_PICTURE')
-    progress_message = update.message.reply_text(msg + '\n⬜⬜⬜⬜⬜')
+    progress_message = message.reply_text(msg + '\n⬜⬜⬜⬜⬜')
 
     context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
 
-    url = update.message.photo[-1].get_file().file_path
+    url = message.photo[-1].get_file().file_path
 
     rs = requests.get(url)
 
@@ -135,7 +137,7 @@ def on_photo(update: Update, context: CallbackContext):
     progress_message.edit_text(msg + '\n⬛⬛⬛⬛⬛')
     progress_message.delete()
 
-    update.message.reply_text(
+    message.reply_text(
         _('COMMANDS_ARE_NOW_AVAILABLE'),
         reply_markup=REPLY_KEYBOARD_MARKUP
     )
@@ -147,8 +149,7 @@ def on_error(update: Update, context: CallbackContext):
     log.exception('Error: %s\nUpdate: %s', context.error, update)
 
     if update:
-        message = update.message or update.edited_message
-        message.reply_text(_('ERROR_TEXT'))
+        update.effective_message.reply_text(_('ERROR_TEXT'))
 
 
 def main():
