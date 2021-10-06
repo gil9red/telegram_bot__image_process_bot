@@ -13,4 +13,5 @@ TOKEN_FILE_NAME = DIR / 'TOKEN.txt'
 
 TOKEN = os.environ.get('TOKEN') or TOKEN_FILE_NAME.read_text('utf-8').strip()
 
-DIR_IMAGES = str(DIR / 'images')
+DIR_IMAGES = DIR / 'images'
+DIR_IMAGES.mkdir(parents=True, exist_ok=True)

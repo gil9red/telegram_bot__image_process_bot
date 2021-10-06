@@ -8,15 +8,16 @@ import io
 import os
 import time
 
+from pathlib import Path
+
 import requests
 
 # pip install Pillow
 from PIL import Image
 
-# pip install python-telegram-bot --upgrade
+# pip install -U python-telegram-bot
 from telegram import ReplyKeyboardMarkup, ChatAction, Update
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackContext
-from telegram.ext.dispatcher import run_async
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackContext, Defaults
 
 import config
 from commands import invert, gray, invert_gray, pixelate, get_image_info, jackal_jpg, thumbnail, blur
@@ -53,14 +54,10 @@ BUTTON_LIST = [
 REPLY_KEYBOARD_MARKUP = ReplyKeyboardMarkup(BUTTON_LIST, resize_keyboard=True)
 
 
-os.makedirs(config.DIR_IMAGES, exist_ok=True)
+def get_file_name_image(chat_id: int) -> Path:
+    return config.DIR_IMAGES / f'{chat_id}.jpg'
 
 
-def get_file_name_image(chat_id):
-    return f'{config.DIR_IMAGES}/{chat_id}.jpg'
-
-
-@run_async
 @catch_error(log)
 @update_lang
 @log_func(log)
@@ -68,7 +65,6 @@ def on_start(update: Update, context: CallbackContext):
     update.effective_message.reply_text(_('WELCOME_MESSAGE'))
 
 
-@run_async
 @catch_error(log)
 @update_lang
 @log_func(log)
@@ -85,7 +81,7 @@ def on_request(update: Update, context: CallbackContext):
     context.bot.send_chat_action(chat_id, action=ChatAction.UPLOAD_PHOTO)
 
     file_name = get_file_name_image(chat_id)
-    if not os.path.exists(file_name):
+    if not file_name.exists():
         message.reply_text(_('NEED_TO_SEND_PICTURE'))
         return
 
@@ -108,7 +104,6 @@ def on_request(update: Update, context: CallbackContext):
         message.reply_photo(bytes_io, reply_markup=REPLY_KEYBOARD_MARKUP)
 
 
-@run_async
 @catch_error(log)
 @update_lang
 @log_func(log)
@@ -123,14 +118,12 @@ def on_photo(update: Update, context: CallbackContext):
     context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
 
     url = message.photo[-1].get_file().file_path
-
     rs = requests.get(url)
 
     progress_message.edit_text(msg + '\n⬛⬛⬛⬜⬜')
 
     file_name = get_file_name_image(chat_id)
-    with open(file_name, 'wb') as f:
-        f.write(rs.content)
+    file_name.write_bytes(rs.content)
 
     log.debug('Picture downloaded!')
     msg = _('PICTURE_DOWNLOADED')
@@ -155,33 +148,25 @@ def on_error(update: Update, context: CallbackContext):
 def main():
     cpu_count = os.cpu_count()
     workers = cpu_count
-    log.debug('System: CPU_COUNT=%s, WORKERS=%s', cpu_count, workers)
+    log.debug(f'System: CPU_COUNT={cpu_count}, WORKERS={workers}')
 
     log.debug('Start')
 
-    # Create the EventHandler and pass it your bot's token.
     updater = Updater(
         config.TOKEN,
         workers=workers,
-        use_context=True
+        defaults=Defaults(run_async=True),
     )
 
-    # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('start', on_start))
     dp.add_handler(MessageHandler(Filters.text, on_request))
     dp.add_handler(MessageHandler(Filters.photo, on_photo))
 
-    # Handle all errors
     dp.add_error_handler(on_error)
 
-    # Start the Bot
     updater.start_polling()
-
-    # Run the bot until the you presses Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
     log.debug('Finish')
