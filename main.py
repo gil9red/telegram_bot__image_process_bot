@@ -139,7 +139,7 @@ def on_photo(update: Update, context: CallbackContext):
 @catch_error(log)
 @update_lang
 def on_error(update: Update, context: CallbackContext):
-    log.exception('Error: %s\nUpdate: %s', context.error, update)
+    log.error('Error: %s\nUpdate: %s', context.error, update, exc_info=context.error)
 
     if update:
         update.effective_message.reply_text(_('ERROR_TEXT'))
